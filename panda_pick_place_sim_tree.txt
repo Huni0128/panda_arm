@@ -1,0 +1,31 @@
+(ID: 0)sch:~/git/panda_arm/panda_pick_place_sim$ tree
+.
+├── CMakeLists.txt
+├── config
+│   ├── chomp_planning.yaml
+│   ├── initial_positions.yaml
+│   ├── joint_limits.yaml
+│   ├── kinematics.yaml
+│   ├── moveit_controllers.yaml
+│   ├── ompl_planning.yaml
+│   ├── panda_hand.ros2_control.xacro
+│   ├── panda.ros2_control.xacro
+│   ├── panda.srdf
+│   ├── panda.urdf.xacro
+│   ├── pilz_cartesian_limits.yaml
+│   ├── pilz_industrial_motion_planner_planning.yaml
+│   ├── planning_pipeline.yaml
+│   ├── ros2_controllers.yaml
+│   └── stomp_planning.yaml
+├── include
+│   └── panda_moveit2_sim
+├── launch
+│   └── demo.launch.py
+├── package.xml
+├── rviz
+│   └── moveit.rviz
+├── scripts
+├── src
+└── urdf
+
+9 directories, 19 files
