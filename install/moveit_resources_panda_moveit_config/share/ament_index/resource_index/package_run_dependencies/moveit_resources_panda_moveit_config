@@ -1,0 +1,1 @@
+moveit_resources_panda_description;ros2cli_common_extensions;joint_state_publisher;joint_state_publisher_gui;robot_state_publisher;controller_manager;position_controllers;xacro;topic_tools
