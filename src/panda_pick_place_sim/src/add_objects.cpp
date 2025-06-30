@@ -4,9 +4,19 @@
 #include <moveit_msgs/msg/object_color.hpp>
 #include <shape_msgs/msg/solid_primitive.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <moveit/planning_scene_interface/planning_scene_interface.hpp>  // ← 추가됨
 
 void add_colored_objects(rclcpp::Node::SharedPtr node)
 {
+  // 기존 box 삭제
+  moveit::planning_interface::PlanningSceneInterface psi;
+  moveit_msgs::msg::CollisionObject remove_box;
+  remove_box.id = "box";
+  remove_box.header.frame_id = "panda_link0";
+  remove_box.operation = remove_box.REMOVE;
+  psi.applyCollisionObjects({remove_box});
+  rclcpp::sleep_for(std::chrono::milliseconds(300));  // 삭제 적용 대기
+
   // 퍼블리셔 설정
   auto planning_scene_publisher =
       node->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", 10);
@@ -59,7 +69,7 @@ void add_colored_objects(rclcpp::Node::SharedPtr node)
   geometry_msgs::msg::Pose platform_pose;
   platform_pose.position.x = 0.0;
   platform_pose.position.y = -0.4;
-  platform_pose.position.z = 0.42;
+  platform_pose.position.z = 0.32;
 
   platform.primitives.push_back(platform_primitive);
   platform.primitive_poses.push_back(platform_pose);
@@ -99,22 +109,4 @@ void add_colored_objects(rclcpp::Node::SharedPtr node)
     planning_scene_publisher->publish(planning_scene);
     rate.sleep();
   }
-}
-
-int main(int argc, char** argv)
-{
-  rclcpp::init(argc, argv);
-  auto node = rclcpp::Node::make_shared("add_colored_objects_node");
-
-  rclcpp::executors::SingleThreadedExecutor executor;
-  executor.add_node(node);
-  std::thread([&executor]() { executor.spin(); }).detach();
-
-  RCLCPP_INFO(node->get_logger(), "Publishing colored collision objects...");
-  add_colored_objects(node);
-  RCLCPP_INFO(node->get_logger(), "Done.");
-
-  rclcpp::sleep_for(std::chrono::seconds(2));
-  rclcpp::shutdown();
-  return 0;
 }

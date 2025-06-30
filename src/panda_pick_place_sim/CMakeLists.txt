@@ -13,6 +13,7 @@ find_package(shape_msgs REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 
+# include 경로 지정
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
@@ -31,18 +32,20 @@ ament_target_dependencies(pick_place_modules
   geometry_msgs
 )
 
-# --- add_objects 노드 ---
-add_executable(add_objects src/add_objects.cpp)
-ament_target_dependencies(add_objects
+# --- add_objects 라이브러리 정의 (add_colored_objects 함수 제공) ---
+add_library(scene_setup
+  src/add_objects.cpp
+)
+ament_target_dependencies(scene_setup
   rclcpp
   moveit_ros_planning_interface
   moveit_msgs
   geometry_msgs
   shape_msgs
 )
-# (add_objects 는 모듈을 직접 쓰지 않으므로 링크하지 않음)
+target_include_directories(scene_setup PUBLIC include)
 
-# --- main 노드 (모듈 사용 시) ---
+# --- main 노드 (모듈 + scene 사용) ---
 add_executable(main src/main.cpp)
 ament_target_dependencies(main
   rclcpp
@@ -53,13 +56,14 @@ ament_target_dependencies(main
 )
 target_link_libraries(main
   pick_place_modules
+  scene_setup
 )
 
 # --- 설치 설정 ---
 install(TARGETS
-  add_objects
   main
   pick_place_modules
+  scene_setup
   DESTINATION lib/${PROJECT_NAME}
 )
 
