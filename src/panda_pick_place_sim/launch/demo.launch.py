@@ -37,6 +37,7 @@ def generate_launch_description():
             },
         )
         .robot_description_semantic(file_path="config/panda.srdf")
+        .robot_description_kinematics(file_path="config/kinematics.yaml")
         .planning_scene_monitor(
             publish_robot_description=True, publish_robot_description_semantic=True
         )
@@ -46,6 +47,7 @@ def generate_launch_description():
         )
         .to_moveit_configs()
     )
+
 
     # Nodes
     move_group_node = Node(

@@ -1,50 +1,53 @@
 #include <rclcpp/rclcpp.hpp>
-#include <moveit/move_group_interface/move_group_interface.h>
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
+#include <moveit_msgs/msg/planning_scene.hpp>
 #include <moveit_msgs/msg/collision_object.hpp>
+#include <moveit_msgs/msg/object_color.hpp>
 #include <shape_msgs/msg/solid_primitive.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 
-using std::placeholders::_1;
-
-void add_collision_objects(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface)
+void add_colored_objects(rclcpp::Node::SharedPtr node)
 {
-  // Define a table
+  // 퍼블리셔 설정
+  auto planning_scene_publisher =
+      node->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", 10);
+
+  // ----- 테이블 생성 -----
   moveit_msgs::msg::CollisionObject table;
   table.id = "table";
   table.header.frame_id = "panda_link0";
 
   shape_msgs::msg::SolidPrimitive table_primitive;
   table_primitive.type = table_primitive.BOX;
-  table_primitive.dimensions = {0.5, 1.5, 0.4};  // X, Y, Z
+  table_primitive.dimensions = {0.5, 1.3, 0.3};
 
   geometry_msgs::msg::Pose table_pose;
   table_pose.position.x = 0.5;
   table_pose.position.y = 0.0;
-  table_pose.position.z = 0.2;
+  table_pose.position.z = 0.1;
 
   table.primitives.push_back(table_primitive);
   table.primitive_poses.push_back(table_pose);
   table.operation = table.ADD;
 
-  // Define a box to pick
+  // ----- 박스 생성 -----
   moveit_msgs::msg::CollisionObject box;
   box.id = "box";
   box.header.frame_id = "panda_link0";
 
   shape_msgs::msg::SolidPrimitive box_primitive;
   box_primitive.type = box_primitive.BOX;
-  box_primitive.dimensions = {0.04, 0.04, 0.04};
+  box_primitive.dimensions = {0.06, 0.06, 0.06};
 
   geometry_msgs::msg::Pose box_pose;
   box_pose.position.x = 0.5;
   box_pose.position.y = 0.0;
-  box_pose.position.z = 0.42;
+  box_pose.position.z = 0.30;
 
   box.primitives.push_back(box_primitive);
   box.primitive_poses.push_back(box_pose);
   box.operation = box.ADD;
 
-  // Define a place platform
+  // ----- 플랫폼 생성 -----
   moveit_msgs::msg::CollisionObject platform;
   platform.id = "platform";
   platform.header.frame_id = "panda_link0";
@@ -62,27 +65,56 @@ void add_collision_objects(moveit::planning_interface::PlanningSceneInterface& p
   platform.primitive_poses.push_back(platform_pose);
   platform.operation = platform.ADD;
 
-  // Apply all objects
-  planning_scene_interface.applyCollisionObjects({table, box, platform});
+  // ----- 색상 설정 -----
+  moveit_msgs::msg::ObjectColor table_color;
+  table_color.id = "table";
+  table_color.color.r = 0.0;
+  table_color.color.g = 0.0;
+  table_color.color.b = 0.0;
+  table_color.color.a = 1.0;
+
+  moveit_msgs::msg::ObjectColor box_color;
+  box_color.id = "box";
+  box_color.color.r = 1.0;
+  box_color.color.g = 1.0;
+  box_color.color.b = 0.0;
+  box_color.color.a = 1.0;
+
+  moveit_msgs::msg::ObjectColor platform_color;
+  platform_color.id = "platform";
+  platform_color.color.r = 0.0;
+  platform_color.color.g = 0.0;
+  platform_color.color.b = 0.0;
+  platform_color.color.a = 1.0;
+
+  // ----- PlanningScene 메시지 구성 -----
+  moveit_msgs::msg::PlanningScene planning_scene;
+  planning_scene.is_diff = true;
+  planning_scene.world.collision_objects = {table, box, platform};
+  planning_scene.object_colors = {table_color, box_color, platform_color};
+
+  // 퍼블리시
+  rclcpp::Rate rate(10);
+  for (int i = 0; i < 10; ++i) {
+    planning_scene_publisher->publish(planning_scene);
+    rate.sleep();
+  }
 }
 
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
-  auto node = rclcpp::Node::make_shared("add_collision_objects_node");
+  auto node = rclcpp::Node::make_shared("add_colored_objects_node");
 
-  // Setup Planning Interface
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node);
   std::thread([&executor]() { executor.spin(); }).detach();
 
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-
-  RCLCPP_INFO(node->get_logger(), "Adding collision objects...");
-  add_collision_objects(planning_scene_interface);
+  RCLCPP_INFO(node->get_logger(), "Publishing colored collision objects...");
+  add_colored_objects(node);
   RCLCPP_INFO(node->get_logger(), "Done.");
 
-  rclcpp::sleep_for(std::chrono::seconds(3));  // Wait for RViz to reflect changes
+  rclcpp::sleep_for(std::chrono::seconds(2));
   rclcpp::shutdown();
   return 0;
 }

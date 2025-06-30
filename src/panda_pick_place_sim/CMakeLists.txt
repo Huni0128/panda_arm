@@ -8,8 +8,9 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(shape_msgs REQUIRED)
+find_package(control_msgs REQUIRED)  # ← 추가됨
 
-# 실행 파일 정의
+# add_objects 노드
 add_executable(add_objects src/add_objects.cpp)
 ament_target_dependencies(add_objects
   rclcpp
@@ -19,9 +20,28 @@ ament_target_dependencies(add_objects
   shape_msgs
 )
 
+# pick_object 노드 추가
+add_executable(pick_object src/pick_object.cpp)
+ament_target_dependencies(pick_object
+  rclcpp
+  moveit_ros_planning_interface
+  geometry_msgs
+  moveit_msgs
+  control_msgs  # ← 추가됨
+)
+
+# pick_debug 노드
+add_executable(pick_debug src/pick_debug.cpp)
+ament_target_dependencies(pick_debug 
+  rclcpp
+  moveit_ros_planning_interface
+)
+
 # 설치 설정
 install(TARGETS
   add_objects
+  pick_object
+  pick_debug
   DESTINATION lib/${PROJECT_NAME}
 )
 

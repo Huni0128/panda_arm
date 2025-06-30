@@ -6,7 +6,7 @@
     Pick &amp; Place simulation using MoveIt2 and Panda robot arm.
   </description>
 
-  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <maintainer email="tlacogns@gmail.com">Simchaehun</maintainer>
   <license>BSD</license>
 
   <!-- Build tools -->
@@ -25,7 +25,8 @@
   <depend>xacro</depend>
   <depend>rviz2</depend>
   <depend>moveit_configs_utils</depend>
-  <depend>ament_index_python</depend> <!-- PathJoinSubstitution 등 사용 시 필요 -->
+  <depend>ament_index_python</depend>
+  <depend>control_msgs</depend> <!-- 추가된 의존성 -->
 
   <export>
     <build_type>ament_cmake</build_type>
