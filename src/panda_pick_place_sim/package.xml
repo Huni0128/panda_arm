@@ -9,16 +9,18 @@
   <maintainer email="tlacogns@gmail.com">Simchaehun</maintainer>
   <license>BSD</license>
 
-  <!-- Build tools -->
+  <!-- Build tool -->
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <!-- Build and runtime dependencies -->
+  <!-- Build & run dependencies -->
   <depend>rclcpp</depend>
   <depend>moveit_ros_planning_interface</depend>
   <depend>moveit_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>shape_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>  
+  <depend>control_msgs</depend>       
   <depend>robot_state_publisher</depend>
   <depend>controller_manager</depend>
   <depend>warehouse_ros_mongo</depend>
@@ -26,7 +28,6 @@
   <depend>rviz2</depend>
   <depend>moveit_configs_utils</depend>
   <depend>ament_index_python</depend>
-  <depend>control_msgs</depend> <!-- 추가된 의존성 -->
 
   <export>
     <build_type>ament_cmake</build_type>
