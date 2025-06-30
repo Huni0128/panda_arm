@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>panda_pick_place_sim</name>
+  <version>0.0.1</version>
+  <description>
+    Pick &amp; Place simulation using MoveIt2 and Panda robot arm.
+  </description>
+
+  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <license>BSD</license>
+
+  <!-- Build tools -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Build and runtime dependencies -->
+  <depend>rclcpp</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>moveit_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>shape_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>controller_manager</depend>
+  <depend>warehouse_ros_mongo</depend>
+  <depend>xacro</depend>
+  <depend>rviz2</depend>
+  <depend>moveit_configs_utils</depend>
+  <depend>ament_index_python</depend> <!-- PathJoinSubstitution 등 사용 시 필요 -->
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

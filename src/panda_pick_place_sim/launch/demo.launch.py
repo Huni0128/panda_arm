@@ -1,6 +1,6 @@
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, TimerAction, ExecuteProcess
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.conditions import IfCondition
 from launch_ros.actions import Node
@@ -10,7 +10,6 @@ from moveit_configs_utils import MoveItConfigsBuilder
 
 
 def generate_launch_description():
-
     # Command-line arguments
     rviz_config_arg = DeclareLaunchArgument(
         "rviz_config",
@@ -28,15 +27,13 @@ def generate_launch_description():
         description="ROS 2 control hardware interface type to use for the launch file -- possible values: [mock_components, isaac]",
     )
 
-    # Load MoveIt configuration using custom package name
+    # MoveIt config
     moveit_config = (
         MoveItConfigsBuilder("panda", package_name="panda_pick_place_sim")
         .robot_description(
             file_path="config/panda.urdf.xacro",
             mappings={
-                "ros2_control_hardware_type": LaunchConfiguration(
-                    "ros2_control_hardware_type"
-                )
+                "ros2_control_hardware_type": LaunchConfiguration("ros2_control_hardware_type")
             },
         )
         .robot_description_semantic(file_path="config/panda.srdf")
@@ -50,7 +47,7 @@ def generate_launch_description():
         .to_moveit_configs()
     )
 
-    # Start move_group node
+    # Nodes
     move_group_node = Node(
         package="moveit_ros_move_group",
         executable="move_group",
@@ -59,7 +56,6 @@ def generate_launch_description():
         arguments=["--ros-args", "--log-level", "info"],
     )
 
-    # RViz node
     rviz_base = LaunchConfiguration("rviz_config")
     rviz_config = PathJoinSubstitution(
         [FindPackageShare("panda_pick_place_sim"), "rviz", rviz_base]
@@ -79,7 +75,6 @@ def generate_launch_description():
         ],
     )
 
-    # Static TF publisher (world → panda_link0)
     static_tf_node = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -88,7 +83,6 @@ def generate_launch_description():
         arguments=["0", "0", "0", "0", "0", "0", "world", "panda_link0"],
     )
 
-    # Robot state publisher
     robot_state_publisher = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -97,7 +91,6 @@ def generate_launch_description():
         parameters=[moveit_config.robot_description],
     )
 
-    # ros2_control setup
     ros2_controllers_path = os.path.join(
         get_package_share_directory("panda_pick_place_sim"),
         "config",
@@ -107,20 +100,14 @@ def generate_launch_description():
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[ros2_controllers_path],
-        remappings=[
-            ("/controller_manager/robot_description", "/robot_description"),
-        ],
+        remappings=[("/controller_manager/robot_description", "/robot_description")],
         output="screen",
     )
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[
-            "joint_state_broadcaster",
-            "--controller-manager",
-            "/controller_manager",
-        ],
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
 
     panda_arm_controller_spawner = Node(
@@ -135,7 +122,6 @@ def generate_launch_description():
         arguments=["panda_hand_controller", "-c", "/controller_manager"],
     )
 
-    # MongoDB for warehouse (optional)
     db_config = LaunchConfiguration("db")
     mongodb_server_node = Node(
         package="warehouse_ros_mongo",
@@ -147,6 +133,17 @@ def generate_launch_description():
         ],
         output="screen",
         condition=IfCondition(db_config),
+    )
+
+    # Add collision objects (3초 뒤 실행)
+    add_objects_process = TimerAction(
+        period=3.0,
+        actions=[
+            ExecuteProcess(
+                cmd=["ros2", "run", "panda_pick_place_sim", "add_objects"],
+                output="screen",
+            )
+        ],
     )
 
     return LaunchDescription(
@@ -163,5 +160,6 @@ def generate_launch_description():
             panda_arm_controller_spawner,
             panda_hand_controller_spawner,
             mongodb_server_node,
+            add_objects_process,
         ]
     )
