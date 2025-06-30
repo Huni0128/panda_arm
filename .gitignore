@@ -55,7 +55,6 @@ CATKIN_IGNORE
 *.pcd
 
 # === RViz, launch artifacts ===
-*.rviz
 *.launch.pyc
 *.bak
 
